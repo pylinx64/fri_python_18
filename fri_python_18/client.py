@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import socket, colorama, time, threading
-from colorama import Fore
+from colorama import Fore, Style
+import random
 
 colorama.init()
 
@@ -32,6 +33,11 @@ s.bind((host, port))
 s.setblocking(0)
 
 name = input("$ name: ")
+colors = [Fore.GREEN, Fore.RED, Fore.CYAN, Fore.YELLOW, Fore.MAGENTA]
+name = list(name)
+name = [random.choice(colors)+char for char in name]
+name.extend(Fore.RESET)
+name = ''.join(name)
 s.sendto(("["+name+"] => join chat ").encode("utf-8"), server)
 time.sleep(0.2)
 
@@ -41,7 +47,10 @@ rT.start()
 while shutdown == False:
 	try:
 		print("["+name+"] > ", end='')
+		print(Fore.GREEN, end='')
 		message = input()
+		message = Fore.GREEN+message+Fore.RESET
+		print(Fore.RESET, end='')
 		if message != "":
 			s.sendto(("["+name+"] > "+message).encode("utf-8"), server)
 		time.sleep(0.2)
