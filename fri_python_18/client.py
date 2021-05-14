@@ -1,43 +1,45 @@
 # -*- coding: utf-8 -*-
 
-import time, socket, threading, colorama, random
-from colorama import Fore
+import socket, colorama, time, threading
+from colorama import Fore, Style
+import random
+
 colorama.init()
 
-def receving(name, sock, switch):
+def receving (name, sock, switch):
 	while not switch:
 		try:
 			while True:
 				data, addr = sock.recvfrom(1024)
-				print('\n'+data.decode("utf-8"))
+				print(' '+data.decode("utf-8"))
 				time.sleep(0.2)
 		except:
-			pass
+			pass     
 
-
-# Выкл; подключение 	
+# Выкл, подключение
 shutdown = False
 join = False
 
-# ваш ip  и порт
+# host - ip комп
 host = socket.gethostbyname(socket.gethostname())
 port = 0
 
-server = ("26.194.184.205", 11719)
+# ip и порт сервера
+server = ("192.168.31.43", 11721)
 
-# подключаемся к серверу
-s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-s.bind((host,port))
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind((host, port))
 s.setblocking(0)
 
 name = input("$ name: ")
+
 colors = [Fore.GREEN, Fore.RED, Fore.CYAN, Fore.YELLOW, Fore.MAGENTA]
 name = list(name)
 name = [random.choice(colors)+char for char in name]
+name.extend(Fore.RESET)
 name = ''.join(name)
-
-# отправляет сообщения 
-s.sendto(("["+Fore.CYAN+name+Fore.RESET+"] => join chat ").encode("utf-8"), server)
+s.sendto(("["+name+"] => join chat ").encode("utf-8"), server)
 time.sleep(0.2)
 
 rT = threading.Thread(target = receving, args = ("RecvThread", s, shutdown))
@@ -45,13 +47,17 @@ rT.start()
 
 while shutdown == False:
 	try:
-		message = input("["+name+"] > ")
+		print("["+name+"] > ", end='')
+		print(Fore.GREEN, end='')
+		message = input()
+		message = Fore.GREEN+message+Fore.RESET
+		print(Fore.RESET, end='')
 		if message != "":
-			s.sendto(("["+name+"] > "+Fore.YELLOW+message+Fore.RESET).encode("utf-8"), server)
+			s.sendto(("["+name+"] > "+message).encode("utf-8"), server)
 		time.sleep(0.2)
 	except:
-		s.sendto(("["+Fore.CYAN+name+Fore.RESET+"] <= left chat ").encode("utf-8"), server)
+		s.sendto(("["+name+"] <= left chat ").encode("utf-8"), server)
 		shutdown = True
-
-rT.join()		
+	
+rT.join()
 s.close()
